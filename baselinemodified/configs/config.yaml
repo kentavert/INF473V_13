@@ -1,0 +1,25 @@
+defaults:
+  - model: resnet
+  - dataset: 10_classes_supervised
+  - optim: adamw
+  - loss_fn: cross_entropy
+
+epochs: 100
+
+datamodule:
+  _target_: data.datamodule.DataModule
+  train_dataset_path: ${dataset.train_path}
+  train_transform: ${dataset.train_transform}
+  val_transform: ${dataset.test_transform}
+  batch_size: ${dataset.batch_size}
+  num_workers: ${dataset.num_workers}
+
+data_dir: ${root_dir}/dataset
+root_dir:  ${hydra:runtime.cwd}
+checkpoint_path: ${root_dir}/checkpoints/model.pt
+
+hydra:
+  run:
+    dir: outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}/
+  job:
+    chdir: true
