@@ -1,0 +1,8 @@
+split_dataset.py
+wandb
+outputs
+/dataset
+challenge_subset
+create_test.py
+/dataset.zip
+/checkpoints
