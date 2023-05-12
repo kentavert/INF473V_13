@@ -3,34 +3,28 @@ import wandb
 import hydra
 from tqdm import tqdm
 
-logger = wandb.init(project="testbasecode", name="run1")
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+logger = wandb.init(project="challenge", name="run")
 
-
-@hydra.main(config_path="configs", config_name="config")
+@hydra.main(config_path="configs", config_name="config", version_base=None)
 def train(cfg):
-    #print(cfg)
+
+
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('mps') if torch.backends.mps.is_available() else torch.device('cpu')
+
     model = hydra.utils.instantiate(cfg.model).to(device)
     optimizer = hydra.utils.instantiate(cfg.optim, params=model.parameters())
     loss_fn = hydra.utils.instantiate(cfg.loss_fn)
-
     datamodule = hydra.utils.instantiate(cfg.datamodule)
 
     train_loader = datamodule.train_dataloader()
     val_loader = datamodule.val_dataloader()
 
-    #print(cfg.epochs)
-
     for epoch in tqdm(range(cfg.epochs)):
-        
         epoch_loss = 0
         epoch_num_correct = 0
         num_samples = 0
-    
-
         for i, batch in enumerate(train_loader):
             images, labels = batch
-            print('i am here')
             images = images.to(device)
             labels = labels.to(device)
             preds = model(images)
@@ -78,6 +72,7 @@ def train(cfg):
             }
         )
     torch.save(model.state_dict(), cfg.checkpoint_path)
+    wandb.finish()
 
 
 if __name__ == "__main__":

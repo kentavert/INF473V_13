@@ -1,16 +1,18 @@
 defaults:
+  - _self_
   - model: resnet
   - dataset: 10_classes_supervised
   - optim: adamw
   - loss_fn: cross_entropy
 
-epochs: 100
+epochs: 20
 
 datamodule:
   _target_: data.datamodule.DataModule
   train_dataset_path: ${dataset.train_path}
   train_transform: ${dataset.train_transform}
   val_transform: ${dataset.test_transform}
+  train_data_augment: ${dataset.aug_transform}
   batch_size: ${dataset.batch_size}
   num_workers: ${dataset.num_workers}
 

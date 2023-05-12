@@ -10,6 +10,7 @@ class DataModule:
         train_dataset_path,
         train_transform,
         val_transform,
+        train_data_augment,
         batch_size,
         num_workers,
     ):
@@ -20,10 +21,13 @@ class DataModule:
                 int(0.8 * len(self.dataset)),
                 len(self.dataset) - int(0.8 * len(self.dataset)),
             ],
-            #generator=torch.Generator().manual_seed(3407),
+            generator=torch.Generator().manual_seed(3407),
         )
-        #self.train_dataset.transform = train_transform
-        
+        for i in range(3):
+            data_augment1 = train_data_augment(self.dataset)
+            self.dataset = torch.utils.data.ConcatDataset(data_augment1,self.dataset)
+
+        self.val_dataset.transform = val_transform
         self.batch_size = batch_size
         self.num_workers = num_workers
 
