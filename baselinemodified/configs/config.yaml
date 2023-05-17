@@ -5,11 +5,12 @@ defaults:
   - optim: adamw
   - loss_fn: cross_entropy
 
-epochs: 40
+epochs: 20
 
 datamodule:
   _target_: data.datamodule.DataModule
   train_dataset_path: ${dataset.train_path}
+  unlabelled_dataset_path: ${dataset.unlabelled_path}
   train_transform: ${dataset.train_transform}
   val_transform: ${dataset.test_transform}
   aug_transform: ${dataset.aug_transform}
