@@ -58,12 +58,13 @@ def train(cfg):
         #train on the pseudo labels
         for i, batch in enumerate(unlabel_loader):
             images, labels, idxs = batch
+            images = datamodule.data_augment(images)
             extracted_images = []
             extracted_labels = []
             for j in range(len(images)):
                 if labels[j]!=48:
                     extracted_images.append(images[j].tolist())
-                    extracted_labels.append(labels[j].tolist())
+                    extracted_labels.append(labels[j])
             extracted_images = torch.Tensor(extracted_images).to(device)
             extracted_labels = torch.Tensor(extracted_labels).to(device)
             if(len(extracted_labels)==0):
@@ -77,6 +78,8 @@ def train(cfg):
         #setting pseudo labels
         for i, batch in enumerate(unlabel_loader):
             images, labels, idxs = batch
+            images = images.to(device)
+            labels = labels.to(device)
             preds = torch.nn.functional.softmax(model(images),dim=-1)
             for j in range(len(images)):
                 if labels[j]==48:
