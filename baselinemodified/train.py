@@ -3,14 +3,14 @@ import wandb
 import hydra
 from tqdm import tqdm
 
-logger = wandb.init(project="challenge", name="run")
+
 
 @hydra.main(config_path="configs", config_name="config", version_base=None)
 def train(cfg):
 
-
+    logger = wandb.init(project="challenge", name="run")
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('mps') if torch.backends.mps.is_available() else torch.device('cpu')
-
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     model = hydra.utils.instantiate(cfg.model).to(device)
     optimizer = hydra.utils.instantiate(cfg.optim, params=model.parameters())
     loss_fn = hydra.utils.instantiate(cfg.loss_fn)
@@ -25,6 +25,7 @@ def train(cfg):
         num_samples = 0
         for i, batch in enumerate(train_loader):
             images, labels = batch
+            images = datamodule.data_augment(images)
             images = images.to(device)
             labels = labels.to(device)
             preds = model(images)

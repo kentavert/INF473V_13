@@ -12,7 +12,7 @@ datamodule:
   train_dataset_path: ${dataset.train_path}
   train_transform: ${dataset.train_transform}
   val_transform: ${dataset.test_transform}
-  train_data_augment: ${dataset.aug_transform}
+  aug_transform: ${dataset.aug_transform}
   batch_size: ${dataset.batch_size}
   num_workers: ${dataset.num_workers}
 

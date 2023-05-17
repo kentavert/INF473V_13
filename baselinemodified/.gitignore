@@ -5,4 +5,3 @@ outputs
 challenge_subset
 create_test.py
 /dataset.zip
-/checkpoints
