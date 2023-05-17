@@ -86,7 +86,7 @@ def train(cfg):
                     pred = preds[j]
                     if pred[pred.argmax()]>0.6:
                         datamodule.unlabelled_dataset.set_label(pred.argmax(),idxs[j])
-
+        unlabel_loader = datamodule.unlabelled_dataloader()
         for i, batch in enumerate(val_loader):
             images, labels = batch
             images = images.to(device)
