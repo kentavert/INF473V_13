@@ -1,4 +1,4 @@
-The implementation of baseline code. I have some trouble in training the model. You could add the dataset under the folder 'baselinemodified'. 
-After downloading the 'dataset', you could copy the folder 'train' into the folder /baselinemodified/dataset. Then it will fit the path in the config.yaml. 
-But once you launch the code, it will restart again and again. I didn't find why. But I am pretty sure the problem lis on 'train_dataloader' in line 31 train.py.
- Do you know how to fix it? 
+### Data augmentation
+I have successfully applied the augmentation, though the accuracy may not be improved significantly, while the loss and the training accuracy do not increase that high than before. Therefore, I think it prevents the overfitting here, which is kind of an improvement. 
+
+Also, I have tried to train for some longer epochs, since overfitting is less significant. However, it takes a little bit longer time, I cannot make some conclusions by now. In my opinion, most of the training time is wasted on data transfering or copying. Maybe we could apply a deeper and more recent model to get more accuracy and make more use of good GPUs, since my GPU did not even sweat during training. 
