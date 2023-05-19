@@ -27,7 +27,7 @@ def train(cfg):
         num_samples = 0
         for i, batch in enumerate(train_loader):
             images, labels = batch
-            images = datamodule.data_augment(images)
+            #images = datamodule.data_augment(images)
             images = images.to(device)
             labels = labels.to(device)
             preds = model(images)
@@ -55,18 +55,38 @@ def train(cfg):
         epoch_num_correct = 0
         num_samples = 0
 
+        #setting pseudo labels
+        for i, batch in enumerate(unlabel_loader):
+            if epoch<10 :
+                break
+
+            images, labels, idxs = batch
+            images = images.to(device)
+            labels = labels.to(device)
+            preds = torch.nn.functional.softmax(model(images),dim=-1)
+            for j in range(len(images)):
+                if labels[j]==48: #attention
+                    pred = preds[j]
+                    if pred[pred.argmax()]>0.8:
+                        datamodule.unlabelled_dataset.set_label(pred.argmax(),idxs[j])
+                        #print(pred)
+
+
         #train on the pseudo labels
         for i, batch in enumerate(unlabel_loader):
+            if epoch<10 :
+                break
             images, labels, idxs = batch
-            images = datamodule.data_augment(images)
+            #images = datamodule.data_augment(images)
             extracted_images = []
             extracted_labels = []
+
             for j in range(len(images)):
                 if labels[j]!=48:
                     extracted_images.append(images[j].tolist())
                     extracted_labels.append(labels[j])
-            extracted_images = torch.Tensor(extracted_images).to(device)
-            extracted_labels = torch.Tensor(extracted_labels).to(device)
+            extracted_images = torch.tensor(extracted_images).to(device)
+            extracted_labels = torch.tensor(extracted_labels).type(torch.LongTensor).to(device)
             if(len(extracted_labels)==0):
                 continue
             preds = model(extracted_images)
@@ -75,17 +95,7 @@ def train(cfg):
             loss.backward()
             optimizer.step()
 
-        #setting pseudo labels
-        for i, batch in enumerate(unlabel_loader):
-            images, labels, idxs = batch
-            images = images.to(device)
-            labels = labels.to(device)
-            preds = torch.nn.functional.softmax(model(images),dim=-1)
-            for j in range(len(images)):
-                if labels[j]==48:
-                    pred = preds[j]
-                    if pred[pred.argmax()]>0.6:
-                        datamodule.unlabelled_dataset.set_label(pred.argmax(),idxs[j])
+        
 
         for i, batch in enumerate(val_loader):
             images, labels = batch

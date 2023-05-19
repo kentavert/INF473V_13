@@ -17,7 +17,8 @@ class unlabelledDataset(Dataset):
         # filter out non-image files
         self.images_list = [image for image in images_list if image.endswith(".jpg")]
         # set a non exist label
-        self.labels = [48] * len(self.images_list) 
+        self.labels = [48] * len(self.images_list)#attention: 48 or 47
+        self.labels = torch.tensor(self.labels)
 
     def __getitem__(self, idx):
         image_name = self.images_list[idx]
