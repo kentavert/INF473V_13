@@ -61,7 +61,19 @@ def train(cfg):
         epoch_num_correct = 0
         num_samples = 0
 
-        
+        #reseting pseudo labels
+        for i,batch in enumerate(combined_loader):
+            images, labels = batch
+            if i < 720//len(images) + 1 :
+                continue
+            images = images.to(device)
+            labels = labels.to(device)
+            preds = torch.nn.functional.softmax(model(images),dim=-1)
+            for j in range(len(images)):
+                pred = preds[j]
+                if pred[pred.argmax()]>0.9 and pred.argmax()!=labels[j]:
+                    combinedataset.resetlabel(pred.argmax(), i*len(images)+j)
+
 
         #setting pseudo labels
         for i, batch in enumerate(unlabel_loader):

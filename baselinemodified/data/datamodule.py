@@ -55,6 +55,8 @@ class combinedDataset(Dataset):
     def adddata(self, image, label):
         self.images = torch.tensor(self.images.tolist().append(image))
         self.labels = torch.tensor(self.labels.tolist().append(label))
+    def resetlabel(self, newlabel, idx):
+         self.labels[idx] = newlabel
 
     
 class DataModule:
