@@ -2,13 +2,14 @@ import torch
 import wandb
 import hydra
 from tqdm import tqdm
-
+import data.datamodule
+from torch.utils.data import DataLoader
 
 
 @hydra.main(config_path="configs", config_name="config", version_base=None)
 def train(cfg):
 
-    logger = wandb.init(project="challenge", name="test")
+    logger = wandb.init(project="challenge", name="trypseudolabel")
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('mps') if torch.backends.mps.is_available() else torch.device('cpu')
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
@@ -21,12 +22,17 @@ def train(cfg):
     val_loader = datamodule.val_dataloader()
     unlabel_loader = datamodule.unlabelled_dataloader()
 
+    #newly created with traindata inside
+    combinedataset = data.datamodule.combinedDataset(train_loader)
+    combined_loader = DataLoader(combinedataset, batch_size=128, num_workers=8)
+
     for epoch in tqdm(range(cfg.epochs)):
         epoch_loss = 0
         epoch_num_correct = 0
         num_samples = 0
-        for i, batch in enumerate(train_loader):
+        for i, batch in enumerate(combined_loader):
             images, labels = batch
+            #print(images.shape,labels.shape)
             #images = datamodule.data_augment(images)
             images = images.to(device)
             labels = labels.to(device)
@@ -55,10 +61,10 @@ def train(cfg):
         epoch_num_correct = 0
         num_samples = 0
 
+        
+
         #setting pseudo labels
         for i, batch in enumerate(unlabel_loader):
-            if epoch<10 :
-                break
 
             images, labels, idxs = batch
             images = images.to(device)
@@ -68,10 +74,10 @@ def train(cfg):
                 if labels[j]==48: #attention
                     pred = preds[j]
                     if pred[pred.argmax()]>0.8:
-                        datamodule.unlabelled_dataset.set_label(pred.argmax(),idxs[j])
-                        #print(pred)
+                        combinedataset.adddata(images[j], pred.argmax())
+                        labels[j] = pred.argmax()
 
-
+        '''
         #train on the pseudo labels
         for i, batch in enumerate(unlabel_loader):
             if epoch<10 :
@@ -94,8 +100,7 @@ def train(cfg):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-
-        
+            '''
 
         for i, batch in enumerate(val_loader):
             images, labels = batch

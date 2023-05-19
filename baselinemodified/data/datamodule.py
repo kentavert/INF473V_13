@@ -33,6 +33,29 @@ class unlabelledDataset(Dataset):
     
     def set_label(self, newlabel, idx):
          self.labels[idx] = newlabel
+
+class combinedDataset(Dataset):
+    def __init__(self, train_dataloader):
+            self.images = []
+            self.labels = []
+            for i, batch in enumerate(train_dataloader):
+                images, labels = batch
+                for i in range(len(images)):
+                    self.images.append(images[i].tolist())
+                    self.labels.append(labels[i].tolist())
+            self.images = torch.tensor(self.images)
+            self.labels = torch.tensor(self.labels)
+            #print(self.images.shape)
+    def __getitem__(self, idx):
+        label = self.labels[idx]
+        image = self.images[idx]
+        return image, label
+    def __len__(self):
+         return len(self.labels)
+    def adddata(self, image, label):
+        self.images = torch.tensor(self.images.tolist().append(image))
+        self.labels = torch.tensor(self.labels.tolist().append(label))
+
     
 class DataModule:
     def __init__(
@@ -46,6 +69,7 @@ class DataModule:
         num_workers,
     ):
         self.dataset = ImageFolder(train_dataset_path, transform=train_transform)
+        
         self.train_dataset, self.val_dataset = torch.utils.data.random_split(
             self.dataset,
             [
