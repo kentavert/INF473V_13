@@ -5,7 +5,7 @@ defaults:
   - optim: adamw
   - loss_fn: cross_entropy
 
-epochs: 20
+epochs: 60
 
 datamodule:
   _target_: data.datamodule.DataModule
@@ -26,3 +26,7 @@ hydra:
     dir: outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}/
   job:
     chdir: true
+
+T1 : 5
+T2 : 20
+af : 0.2

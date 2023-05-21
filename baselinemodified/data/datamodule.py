@@ -17,8 +17,8 @@ class unlabelledDataset(Dataset):
         # filter out non-image files
         self.images_list = [image for image in images_list if image.endswith(".jpg")]
         # set a non exist label
-        self.labels = [48] * len(self.images_list)#attention: 48 or 47
-        self.labels = torch.tensor(self.labels)
+        self.labels = [48] * len(self.images_list)
+        self.labels = torch.tensor(self.labels).type(torch.LongTensor)
 
     def __getitem__(self, idx):
         image_name = self.images_list[idx]
@@ -35,26 +35,27 @@ class unlabelledDataset(Dataset):
          self.labels[idx] = newlabel
 
 class combinedDataset(Dataset):
-    def __init__(self, train_dataloader):
-            self.images = []
-            self.labels = []
-            for i, batch in enumerate(train_dataloader):
-                images, labels = batch
-                for i in range(len(images)):
-                    self.images.append(images[i].tolist())
-                    self.labels.append(labels[i].tolist())
-            self.images = torch.tensor(self.images)
-            self.labels = torch.tensor(self.labels)
+    def __init__(self, train_dataset, unlabelleddataset):
+            self.train_dataset = train_dataset
+            self.unlabelleddataset = unlabelleddataset
+            self.indexs = torch.tensor([i for i in range(len(self.unlabelleddataset))]).type(torch.LongTensor)
+            self.labels = torch.tensor([-1 for i in range(len(self.unlabelleddataset))]).type(torch.LongTensor)
+            self.permutation = torch.randperm(len(self.train_dataset)+len(self.unlabelleddataset))
             #print(self.images.shape)
     def __getitem__(self, idx):
-        label = self.labels[idx]
-        image = self.images[idx]
+        if idx<len(self.train_dataset):
+             image, label = self.train_dataset.__getitem__(idx)
+             label = torch.tensor(label)
+        else :
+            trueindex = self.indexs[idx-len(self.train_dataset)]
+            image, label, idxofdataset = self.unlabelleddataset.__getitem__(trueindex)
+            label = self.labels[idx-len(self.train_dataset)]
         return image, label
     def __len__(self):
-         return len(self.labels)
-    def adddata(self, image, label):
-        self.images = torch.tensor(self.images.tolist().append(image))
-        self.labels = torch.tensor(self.labels.tolist().append(label))
+         return torch.tensor(len(self.labels)+len(self.train_dataset))
+    def adddata(self, idx, label):
+        self.indexs.append(idx)
+        self.labels = torch.cat((self.labels, label.unsqueeze(0)), dim=0).type(torch.LongTensor)
     def resetlabel(self, newlabel, idx):
          self.labels[idx] = newlabel
 
