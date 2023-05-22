@@ -40,10 +40,10 @@ def train(cfg):
         epoch_num_correct = 0
         num_samples = 0
         for i, batch in enumerate(combined_loader):
-            '''
+            
             if epoch<cfg.T1 :
                 break
-            '''
+            
             images, labels = batch
             #print(images.shape,labels.shape)
             #images = datamodule.data_augment(images)
@@ -69,12 +69,12 @@ def train(cfg):
             preds = model(images)
             
             loss = torch.nn.functional.cross_entropy(preds, labels, reduction='mean', label_smoothing=0.05)
-            '''
+            
             if epoch<cfg.T1 :
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
-            '''
+            
             epoch_loss += loss.detach().cpu().numpy() #* len(images)
             epoch_num_correct += (
                 (preds.argmax(1) == labels).sum().detach().cpu().numpy()
