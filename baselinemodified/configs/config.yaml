@@ -1,6 +1,6 @@
 defaults:
   - _self_
-  - model: resnet
+  - model: vit
   - dataset: 48_classes_supervised
   - optim: adamw
   - loss_fn: cross_entropy
@@ -29,4 +29,4 @@ hydra:
 
 T1 : 20
 T2 : 40
-af : 0.2
+af : 3
