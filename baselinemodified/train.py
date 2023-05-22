@@ -24,7 +24,7 @@ def train(cfg):
 
     #newly created with traindata inside
     combinedataset = data.datamodule.combinedDataset(datamodule.train_dataset, datamodule.unlabelled_dataset)
-    combined_loader = DataLoader(combinedataset, batch_size=128, num_workers=8, shuffle=True)
+    combined_loader = DataLoader(combinedataset, batch_size=cfg.dataset.batch_size, num_workers=cfg.dataset.num_workers, shuffle=True)
 
     #threshold function
     def unlabelweight(epoch):
