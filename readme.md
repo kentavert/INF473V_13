@@ -4,6 +4,8 @@ The size NC6v3 of VM has Nvidia V100 which is quite enough for our training. Tak
 ### Pseudo-labelling
 implemented under guidance of https://paperswithcode.com/task/semi-supervised-image-classification. Didn't try that many different hyperparameters. Not sure it is coded correctly (didn't have a better result within 20 epochs). Maybe it should take more epochs? So I create VM in Azure which takes much shorter time than my computer to take more epochs (besides the fans of computer in casert are annoying).
 
+The train accuracy and train_loss_epoch on WandB are fully dependent on the train_dataset. The loss is calculated on the combined dataset.
+
 ### Data augmentation
 I have successfully applied the augmentation, though the accuracy may not be improved significantly, while the loss and the training accuracy do not increase that high than before. Therefore, I think it prevents the overfitting here, which is kind of an improvement. 
 
