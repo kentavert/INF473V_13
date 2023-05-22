@@ -40,7 +40,6 @@ class combinedDataset(Dataset):
             self.unlabelleddataset = unlabelleddataset
             self.indexs = torch.tensor([i for i in range(len(self.unlabelleddataset))]).type(torch.LongTensor)
             self.labels = torch.tensor([-1 for i in range(len(self.unlabelleddataset))]).type(torch.LongTensor)
-            self.permutation = torch.randperm(len(self.train_dataset)+len(self.unlabelleddataset))
             #print(self.images.shape)
     def __getitem__(self, idx):
         if idx<len(self.train_dataset):
