@@ -35,11 +35,13 @@ class unlabelledDataset(Dataset):
          self.labels[idx] = newlabel
 
 class combinedDataset(Dataset):
-    def __init__(self, train_dataset, unlabelleddataset):
+    def __init__(self, train_dataset, unlabelleddataset, unlabelled_total):
             self.train_dataset = train_dataset
             self.unlabelleddataset = unlabelleddataset
             self.indexs = torch.tensor([i for i in range(len(self.unlabelleddataset))]).type(torch.LongTensor)
             self.labels = torch.tensor([-1 for i in range(len(self.unlabelleddataset))]).type(torch.LongTensor)
+            permutation = torch.randperm(len(self.unlabelleddataset))
+            self.indexs = permutation[0:unlabelled_total]
             #print(self.images.shape)
     def __getitem__(self, idx):
         if idx<len(self.train_dataset):
@@ -51,7 +53,7 @@ class combinedDataset(Dataset):
             label = self.labels[idx-len(self.train_dataset)]
         return image, label
     def __len__(self):
-         return torch.tensor(len(self.labels)+len(self.train_dataset))
+         return torch.tensor(len(self.indexs)+len(self.train_dataset))
     def adddata(self, idx, label):
         self.indexs.append(idx)
         self.labels = torch.cat((self.labels, label.unsqueeze(0)), dim=0).type(torch.LongTensor)

@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 @hydra.main(config_path="configs", config_name="config", version_base=None)
 def train(cfg):
 
-    logger = wandb.init(project="challenge", name="vit 60epochs af=3")
+    logger = wandb.init(project="challenge", name="resnet 500epochs af=3 unlabel = 7200")
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('mps') if torch.backends.mps.is_available() else torch.device('cpu')
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
@@ -23,7 +23,7 @@ def train(cfg):
     unlabel_loader = datamodule.unlabelled_dataloader()
 
     #newly created with traindata inside
-    combinedataset = data.datamodule.combinedDataset(datamodule.train_dataset, datamodule.unlabelled_dataset)
+    combinedataset = data.datamodule.combinedDataset(datamodule.train_dataset, datamodule.unlabelled_dataset, unlabelled_total=cfg.unlabelled_total)
     combined_loader = DataLoader(combinedataset, batch_size=cfg.dataset.batch_size, num_workers=cfg.dataset.num_workers, shuffle=True)
 
     #threshold function
@@ -52,19 +52,23 @@ def train(cfg):
             labels = labels.to(device)
             preds = model(images)
             nolabelsize = (labels == torch.tensor([-1]*len(labels),device=device)).sum().detach()
+            
             labelledloss = torch.sum(loss_fn(preds, labels))/ (len(labels)-nolabelsize+1e-10)
+            
             with torch.no_grad():
                 pseudolabels = preds.max(1)[1]
             unlabelledloss = torch.sum(labels.eq(-1).float() * loss_fn(preds, pseudolabels)) / (nolabelsize+1e-10)
             loss = labelledloss + unlabelweight(epoch)*unlabelledloss
+            #print(nolabelsize, labelledloss, loss)
             logger.log({"loss": loss.detach().cpu().numpy()})
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
+
         for i, batch in enumerate(train_loader):
             images, labels = batch
-            images = images.to(device)
+            images = datamodule.data_augment(images.to(device))
             labels = labels.to(device)
             preds = model(images)
             
@@ -154,18 +158,12 @@ def train(cfg):
             '''
 
         for i, batch in enumerate(val_loader):
-            images, labels = batch
-            images = images.to(device)
-            labels = labels.to(device)
-            preds = model(images)
-            '''
-            labelledloss = torch.sum(loss_fn(preds, labels))/ reallabelsize
             with torch.no_grad():
-                pseudolabels = preds.max(1)[1]
-            unlabelledloss = torch.sum(labels.eq(-1).float() * loss_fn(preds, pseudolabels)) / nolabelsize
-            loss = labelledloss + unlabelweight(epoch)*unlabelledloss
-            '''
-            loss = torch.nn.functional.cross_entropy(preds,labels,label_smoothing=0.05)
+                images, labels = batch
+                images = images.to(device)
+                labels = labels.to(device)
+                preds = model(images)
+                loss = torch.nn.functional.cross_entropy(preds,labels,label_smoothing=0.05)
             epoch_loss += loss.detach().cpu().numpy() * len(images)
             epoch_num_correct += (
                 (preds.argmax(1) == labels).sum().detach().cpu().numpy()
