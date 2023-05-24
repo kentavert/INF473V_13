@@ -1,7 +1,7 @@
 defaults:
   - train_transform: simple
   - test_transform: simple
-  - aug_transform: augment1
+  - aug_transform: augment2
 num_classes: 48
 batch_size: 128
 num_workers: 6

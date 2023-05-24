@@ -20,9 +20,7 @@ def train(cfg):
 
     train_loader = datamodule.train_dataloader()
     val_loader = datamodule.val_dataloader()
-    unlabel_loader = datamodule.unlabelled_dataloader()
 
-    #newly created with traindata inside
     combinedataset = data.datamodule.combinedDataset(datamodule.train_dataset, datamodule.unlabelled_dataset, unlabelled_total=cfg.unlabelled_total)
     combined_loader = DataLoader(combinedataset, batch_size=cfg.dataset .batch_size, num_workers=cfg.dataset.num_workers, shuffle=True)
 
@@ -47,18 +45,20 @@ def train(cfg):
             images, labels = batch
             #print(images.shape,labels.shape)
             #images = datamodule.data_augment(images)
-            
+            images_sup = datamodule.data_augment(images.to(device))
             images = datamodule.data_augment(images.to(device))
+            
             labels = labels.to(device)
+            preds_sup = model(images_sup)
             preds = model(images)
             nolabelsize = (labels == torch.tensor([-1]*len(labels),device=device)).sum().detach()
-            
+            consistencyloss = torch.nn.functional.mse_loss(preds, preds_sup)
             labelledloss = torch.sum(loss_fn(preds, labels))/ (len(labels)-nolabelsize+1e-10)
             
             with torch.no_grad():
                 pseudolabels = preds.max(1)[1]
             unlabelledloss = torch.sum(labels.eq(-1).float() * loss_fn(preds, pseudolabels)) / (nolabelsize+1e-10)
-            loss = labelledloss + unlabelweight(epoch)*unlabelledloss
+            loss = labelledloss + unlabelweight(epoch)*unlabelledloss + consistencyloss
             #print(nolabelsize, labelledloss, loss)
             logger.log({"loss": loss.detach().cpu().numpy()})
             optimizer.zero_grad()
