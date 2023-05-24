@@ -6,4 +6,4 @@ challenge_subset
 create_test.py
 /dataset.zip
 submission.csv
-/checkpoints/model.pt
+/checkpoints
