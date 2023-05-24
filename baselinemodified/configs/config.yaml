@@ -1,11 +1,11 @@
 defaults:
   - _self_
-  - model: resnet
+  - model: vit
   - dataset: 48_classes_supervised
   - optim: adam
   - loss_fn: cross_entropy
 
-epochs: 800
+epochs: 600
 
 datamodule:
   _target_: data.datamodule.DataModule
@@ -28,6 +28,6 @@ hydra:
     chdir: true
 
 T1 : 20
-T2 : 100
+T2 : 300
 af : 3
 unlabelled_total : 14400
