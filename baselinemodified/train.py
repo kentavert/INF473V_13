@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 @hydra.main(config_path="configs", config_name="config", version_base=None)
 def train(cfg):
 
-    logger = wandb.init(project="challenge", name=f"{cfg.model._target_} {cfg.epochs}epochs af{cfg.af} unlabel{cfg.unlabelled_total} {cfg.optim._target_}")
+    logger = wandb.init(project="challenge", name=f"{cfg.model._target_}{cfg.model.frozen} {cfg.epochs}epochs af{cfg.af} unlabel{cfg.unlabelled_total} {cfg.optim._target_}")
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('mps') if torch.backends.mps.is_available() else torch.device('cpu')
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
