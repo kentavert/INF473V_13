@@ -10,7 +10,7 @@ class ResNetFinetune(nn.Module):
         if frozen:
             for param in self.backbone.parameters():
                 param.requires_grad = False
-        self.classifier = nn.Linear(2048, num_classes)
+        self.classifier = nn.Linear(1000, num_classes)
 
     def forward(self, x):
         x = self.backbone(x)
