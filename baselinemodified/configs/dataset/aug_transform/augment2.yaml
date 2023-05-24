@@ -5,15 +5,17 @@ transforms:
   - _target_: torchvision.transforms.RandomGrayscale
     p: 0.3
   - _target_: torchvision.transforms.RandomApply
-    - _target_: torchvision.transforms.ColorJitter
-      brightness: 0.8
-      contrast: 0.8
-      saturation: 0.8
-      hue: 0.2
+    transforms:
+      - _target_: torchvision.transforms.ColorJitter
+        brightness: 0.8
+        contrast: 0.8
+        saturation: 0.8
+        hue: 0.2
     p: 0.4
   - _target_: torchvision.transforms.RandomApply
-    -_target_: torchvision.transforms.GaussianBlur
-      kernel_size: 3
+    transforms:
+      - _target_: torchvision.transforms.GaussianBlur
+        kernel_size: 3
     p: 0.2
   - _target_: torchvision.transforms.RandomResizedCrop
     size: 224
