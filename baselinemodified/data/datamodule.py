@@ -69,6 +69,7 @@ class DataModule:
         train_transform,
         val_transform,
         aug_transform,
+        aug_transform_strong,
         batch_size,
         num_workers,
     ):
@@ -86,6 +87,7 @@ class DataModule:
         self.val_dataset.transform = val_transform
         self.batch_size = batch_size
         self.num_workers = num_workers
+        self.strong_transform = aug_transform_strong
         self.unlabelled_dataset_path = unlabelled_dataset_path
         self.unlabelled_transform = train_transform
         self.unlabelled_dataset = unlabelledDataset(self.unlabelled_dataset_path, self.unlabelled_transform)

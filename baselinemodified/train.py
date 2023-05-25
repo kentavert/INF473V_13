@@ -23,6 +23,7 @@ def train(cfg):
 
     combinedataset = data.datamodule.combinedDataset(datamodule.train_dataset, datamodule.unlabelled_dataset, unlabelled_total=cfg.unlabelled_total)
     combined_loader = DataLoader(combinedataset, batch_size=cfg.dataset .batch_size, num_workers=cfg.dataset.num_workers, shuffle=True)
+    confidence = cfg.confidence
 
     #threshold function
     def unlabelweight(epoch):
@@ -45,20 +46,20 @@ def train(cfg):
             images, labels = batch
             #print(images.shape,labels.shape)
             #images = datamodule.data_augment(images)
-            images_sup = datamodule.data_augment(images.to(device))
+            images_strong = datamodule.strong_transform(images.to(device))
             images = datamodule.data_augment(images.to(device))
             
             labels = labels.to(device)
-            preds_sup = model(images_sup)
+            preds_strong = model(images_strong)
             preds = model(images)
             nolabelsize = (labels == torch.tensor([-1]*len(labels),device=device)).sum().detach()
-            consistencyloss = torch.nn.functional.mse_loss(preds, preds_sup)
             labelledloss = torch.sum(loss_fn(preds, labels))/ (len(labels)-nolabelsize+1e-10)
             
             with torch.no_grad():
                 pseudolabels = preds.max(1)[1]
-            unlabelledloss = torch.sum(labels.eq(-1).float() * loss_fn(preds, pseudolabels)) / (nolabelsize+1e-10)
-            loss = labelledloss + unlabelweight(epoch)*unlabelledloss + consistencyloss
+                probabilities = torch.nn.functional.softmax(preds, dim=-1).max(-1)[0]
+            unlabelledloss = torch.sum(labels.eq(-1).float()* (probabilities>confidence).float() * loss_fn(preds_strong, pseudolabels)) / ((probabilities>confidence).sum()+1e-10)
+            loss = labelledloss + unlabelweight(epoch)*unlabelledloss 
             #print(nolabelsize, labelledloss, loss)
             logger.log({"loss": loss.detach().cpu().numpy()})
             optimizer.zero_grad()

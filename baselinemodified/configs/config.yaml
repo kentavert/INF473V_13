@@ -2,7 +2,7 @@ defaults:
   - _self_
   - model: resnet
   - dataset: 48_classes_supervised
-  - optim: adam
+  - optim: adamw
   - loss_fn: cross_entropy
 
 epochs: 600
@@ -14,6 +14,7 @@ datamodule:
   train_transform: ${dataset.train_transform}
   val_transform: ${dataset.test_transform}
   aug_transform: ${dataset.aug_transform}
+  aug_transform_strong: ${dataset.aug_transform}
   batch_size: ${dataset.batch_size}
   num_workers: ${dataset.num_workers}
 
@@ -28,6 +29,7 @@ hydra:
     chdir: true
 
 T1 : 20
-T2 : 300
+T2 : 200
 af : 3
 unlabelled_total : 14400
+confidence: 0.7
