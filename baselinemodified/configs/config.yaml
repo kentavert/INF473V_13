@@ -31,5 +31,5 @@ hydra:
 T1 : 20
 T2 : 200
 af : 3
-unlabelled_total : 14400
+unlabelled_total : 7200
 confidence: 0.7

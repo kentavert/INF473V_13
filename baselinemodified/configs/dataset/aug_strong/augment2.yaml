@@ -11,7 +11,7 @@ transforms:
         contrast: 0.8
         saturation: 0.8
         hue: 0.2
-    p: 0.4
+    p: 0.7
   - _target_: torchvision.transforms.RandomApply
     transforms:
       - _target_: torchvision.transforms.GaussianBlur
