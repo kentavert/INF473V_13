@@ -5,6 +5,7 @@ from tqdm import tqdm
 import data.datamodule
 from torch.utils.data import DataLoader
 from RandAugment import RandAugment
+import torchvision
 
 
 @hydra.main(config_path="configs", config_name="config", version_base=None)
@@ -47,7 +48,7 @@ def train(cfg):
             images, labels = batch
             #print(images.shape,labels.shape)
             #images = datamodule.data_augment(images)
-            images_strong = datamodule.strong_transform(images.to(device))
+            images_strong = datamodule.strong_transform(torchvision.transforms.ToPILImage()(images.to(device)))
             images = datamodule.data_augment(images.to(device))
             
             labels = labels.to(device)
