@@ -7,11 +7,11 @@ transforms:
   - _target_: torchvision.transforms.RandomAutocontrast
     p: 0.2
   - _target_: torchvision.transforms.RandomSolarize
-    p: 0.2
+    p: 0.3
   - _target_: torchvision.transforms.RandomPosterize
-    p: 0.2
+    p: 0.3
   - _target_: torchvision.transforms.RandomAdjustSharpness
-    p: 0.2
+    p: 0.3
     sharpness_factor: 2
   - _target_: torchvision.transforms.ColorJitter
     brightness: 0.8
