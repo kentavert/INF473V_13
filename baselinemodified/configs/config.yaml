@@ -1,11 +1,11 @@
 defaults:
   - _self_
-  - model: vit
+  - model: resnet
   - dataset: 48_classes_supervised
   - optim: adamw
   - loss_fn: cross_entropy
 
-epochs: 400
+epochs: 500
 
 datamodule:
   _target_: data.datamodule.DataModule
