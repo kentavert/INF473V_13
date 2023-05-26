@@ -7,6 +7,7 @@ Also very useful: https://amitness.com/2020/03/fixmatch-semi-supervised/ https:/
 
 CutOut augmentation: https://github.com/uoguelph-mlrg/Cutout/blob/master/util/cutout.py 
 CTaugment: https://github.com/google-research/remixmatch/blob/master/libml/ctaugment.py
+randaugment: https://github.com/ildoonet/pytorch-randaugment
 
 ### Pseudo-labelling
 implemented under guidance of https://paperswithcode.com/task/semi-supervised-image-classification and https://github.com/iBelieveCJM/pseudo_label-pytorch. Didn't try that many different hyperparameters. Not sure it is coded correctly (didn't have a better result within 20 epochs). Maybe it should take more epochs? So I create VM in Azure which takes much shorter time than my computer to take more epochs (besides the fans of computer in casert are annoying).
