@@ -12,7 +12,7 @@ class ResNetFinetune(nn.Module):
                 param.requires_grad = False
         self.classifier = nn.Sequential(nn.Linear(2048, 1024),
                                                 nn.ReLU(),
-                                                nn.Linear(2048, num_classes),)
+                                                nn.Linear(1024, num_classes),)
 
     def forward(self, x):
         x = self.backbone(x)
