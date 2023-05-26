@@ -28,10 +28,10 @@ def train(cfg):
     #threshold function
     def unlabelweight(epoch):
         alpha = 0.0
-        if epoch > cfg.T1:
-            alpha = (epoch - cfg.T1)/(cfg.T2 - cfg.T1)*cfg.af
-            if epoch >cfg.T2 :
+        if epoch >cfg.T2 :
                 alpha = cfg.af
+        elif epoch > cfg.T1:
+            alpha = (epoch - cfg.T1)/(cfg.T2 - cfg.T1 + 1e-10)*cfg.af
         return alpha
 
     for epoch in tqdm(range(cfg.epochs)):
