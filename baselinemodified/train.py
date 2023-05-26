@@ -48,7 +48,7 @@ def train(cfg):
             images, labels = batch
             #print(images.shape,labels.shape)
             #images = datamodule.data_augment(images)
-            images_strong = datamodule.strong_transform(torchvision.transforms.ToPILImage()(images.to(device)))
+            images_strong = datamodule.strong_transform(images.to(device))
             images = datamodule.data_augment(images.to(device))
             
             labels = labels.to(device)
