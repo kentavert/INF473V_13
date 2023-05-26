@@ -1,5 +1,6 @@
 _target_: torchvision.transforms.Compose
 transforms:
+  - _target_: torchvision.transforms.ToPILImage
   - _target_: torchvision.transforms.RandomHorizontalFlip
   - _target_: torchvision.transforms.RandomVerticalFlip
   - _target_: torchvision.transforms.RandomGrayscale
@@ -19,3 +20,4 @@ transforms:
       - _target_: torchvision.transforms.GaussianBlur
         kernel_size: 3
     p: 0.5
+  - _target_: torchvision.transforms.ToTensor

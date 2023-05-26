@@ -89,7 +89,7 @@ class DataModule:
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.strong_transform = aug_transform_strong
-        self.strong_transform.transforms.insert(0, RandAugment(4, 5))
+        self.strong_transform.transforms.insert(1, RandAugment(4, 5))
         self.unlabelled_dataset_path = unlabelled_dataset_path
         self.unlabelled_transform = train_transform
         self.unlabelled_dataset = unlabelledDataset(self.unlabelled_dataset_path, self.unlabelled_transform)
