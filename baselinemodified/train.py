@@ -4,6 +4,7 @@ import hydra
 from tqdm import tqdm
 import data.datamodule
 from torch.utils.data import DataLoader
+from RandAugment import RandAugment
 
 
 @hydra.main(config_path="configs", config_name="config", version_base=None)

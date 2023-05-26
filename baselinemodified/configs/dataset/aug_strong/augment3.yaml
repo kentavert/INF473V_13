@@ -1,0 +1,21 @@
+_target_: torchvision.transforms.Compose
+transforms:
+  - _target_: torchvision.transforms.RandomHorizontalFlip
+  - _target_: torchvision.transforms.RandomVerticalFlip
+  - _target_: torchvision.transforms.RandomGrayscale
+    p: 0.4
+  - _target_: torchvision.transforms.RandomAutocontrast
+  - _target_: torchvision.transforms.RandomSolarize
+  - _target_: torchvision.transforms.RandomPosterize
+  - _target_: torchvision.transforms.RandomAdjustSharpness
+    sharpness_factor: 2
+  - _target_: torchvision.transforms.ColorJitter
+    brightness: 0.8
+    contrast: 0.8
+    saturation: 0.8
+    hue: 0.2
+  - _target_: torchvision.transforms.RandomApply
+    transforms:
+      - _target_: torchvision.transforms.GaussianBlur
+        kernel_size: 3
+    p: 0.5

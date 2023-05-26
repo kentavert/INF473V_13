@@ -28,8 +28,8 @@ hydra:
   job:
     chdir: true
 
-T1 : 30
-T2 : 200
+T1 : 20
+T2 : 100
 af : 3
-unlabelled_total : 14400
+unlabelled_total : 144000
 confidence: 0.9
