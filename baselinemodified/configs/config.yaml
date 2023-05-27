@@ -5,7 +5,7 @@ defaults:
   - optim: adamw
   - loss_fn: cross_entropy
 
-epochs: 400
+epochs: 700
 
 datamodule:
   _target_: data.datamodule.DataModule
@@ -31,5 +31,5 @@ hydra:
 T1 : 20
 T2 : 100
 af : 3
-unlabelled_total : 1000
+unlabelled_total : 2000
 confidence: 0.9
