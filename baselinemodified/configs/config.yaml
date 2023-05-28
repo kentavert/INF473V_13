@@ -2,7 +2,7 @@ defaults:
   - _self_
   - model: resnet
   - dataset: 48_classes_supervised
-  - optim: adamw
+  - optim: SGD
   - loss_fn: cross_entropy
 
 epochs: 200
@@ -30,7 +30,7 @@ hydra:
 
 T1 : 30
 T2 : 30
-af : 0.14
+af : 1
 unlabelled_total : 100000
 confidence: 0.95
 
