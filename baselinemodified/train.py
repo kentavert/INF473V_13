@@ -62,8 +62,10 @@ def train(cfg):
                 pseudolabels = preds.max(1)[1]
                 probabilities = torch.nn.functional.softmax(preds, dim=-1).max(-1)[0]
                 nolabelsize = (labels == torch.tensor([-1]*len(labels),device=device)).sum()
+                considereddatasize = (probabilities>confidence).sum()
             labelledloss = torch.sum(loss_fn(preds, labels))/ (len(labels)-nolabelsize+1e-10)
-            unlabelledloss = torch.sum(labels.eq(-1).float()* (probabilities>confidence).float() * loss_fn(preds_strong, pseudolabels)) / ((probabilities>confidence).sum()+1e-10)
+
+            unlabelledloss = torch.sum(labels.eq(-1).float()* (probabilities>confidence).float() * loss_fn(preds_strong, pseudolabels)) / (nolabelsize+1e-10)
             loss = labelledloss + unlabelweight(epoch)*unlabelledloss 
             #print(nolabelsize, labelledloss, loss)
             logger.log({"loss": loss.detach().cpu().numpy()})
