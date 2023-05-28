@@ -33,3 +33,6 @@ T2 : 100
 af : 3
 unlabelled_total : 1000
 confidence: 0.9
+
+holes: 1
+cutoutlength: 40

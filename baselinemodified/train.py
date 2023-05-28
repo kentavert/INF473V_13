@@ -6,6 +6,7 @@ import data.datamodule
 from torch.utils.data import DataLoader
 #from RandAugment import RandAugment
 import torchvision
+import cutout
 
 
 @hydra.main(config_path="configs", config_name="config", version_base=None)
@@ -26,6 +27,9 @@ def train(cfg):
     combinedataset = data.datamodule.combinedDataset(datamodule.train_dataset, datamodule.unlabelled_dataset, unlabelled_total=cfg.unlabelled_total)
     combined_loader = DataLoader(combinedataset, batch_size=cfg.dataset .batch_size, num_workers=cfg.dataset.num_workers, shuffle=True)
     confidence = cfg.confidence
+    n_holes = cfg.holes
+    cutoutlength = cfg.cutoutlength
+    cut = cutout.Cutout(n_holes, cutoutlength, device)
 
     #threshold function
     def unlabelweight(epoch):
@@ -48,7 +52,7 @@ def train(cfg):
             images, labels = batch
             #print(images.shape,labels.shape)
             #images = datamodule.data_augment(images)
-            images_strong = datamodule.strong_transform(images.to(device))
+            images_strong = cut(datamodule.strong_transform(images.to(device)))
             images = datamodule.data_augment(images.to(device))
             
             labels = labels.to(device)
