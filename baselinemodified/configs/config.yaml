@@ -5,7 +5,7 @@ defaults:
   - optim: SGD
   - loss_fn: cross_entropy
 
-epochs: 200
+epochs: 300
 
 datamodule:
   _target_: data.datamodule.DataModule
@@ -31,7 +31,7 @@ hydra:
 T1 : 30
 T2 : 30
 af : 1
-unlabelled_total : 100000
+unlabelled_total : 10000
 confidence: 0.95
 
 holes: 1
