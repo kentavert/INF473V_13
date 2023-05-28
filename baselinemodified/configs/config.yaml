@@ -30,7 +30,7 @@ hydra:
 
 T1 : 30
 T2 : 30
-af : 1
+af : 0.1
 unlabelled_total : 10000
 confidence: 0.95
 
