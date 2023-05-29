@@ -56,8 +56,11 @@ def train(cfg):
             if cfg.half==True:
                 images = images.half()
                 labels = labels.half()
-            images_strong = cut(datamodule.strong_transform(images.to(device)))
-            images = datamodule.data_augment(images.to(device))
+                images_strong = cut(datamodule.strong_transform(images.to(device))).half()
+                images = datamodule.data_augment(images.to(device)).half()
+            else:
+                images_strong = cut(datamodule.strong_transform(images.to(device)))
+                images = datamodule.data_augment(images.to(device))
             
             labels = labels.to(device)
             preds_strong = model(images_strong)
