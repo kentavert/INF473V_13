@@ -1,6 +1,6 @@
 defaults:
   - _self_
-  - model: vit
+  - model: resnext
   - dataset: 48_classes_supervised
   - optim: SGD
   - loss_fn: cross_entropy
