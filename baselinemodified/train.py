@@ -17,16 +17,15 @@ def train(cfg):
 
     model = hydra.utils.instantiate(cfg.model).to(device)
     optimizer = hydra.utils.instantiate(cfg.optim, params=model.parameters())
-
-    model, optimizer = amp.initialize(model, optimizer, opt_level="O1")
-    with amp.scale_loss(loss, optimizer) as scaled_loss:
-        scaled_loss.backward()
     
     lambda1 = lambda epoch: torch.cos(torch.tensor(7*3.1416*epoch/16/cfg.epochs))
 
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda1)
 
     loss_fn = hydra.utils.instantiate(cfg.loss_fn)
+    model, optimizer = amp.initialize(model, optimizer, opt_level="O1")
+    with amp.scale_loss(loss_fn, optimizer) as scaled_loss:
+        scaled_loss.backward()
     datamodule = hydra.utils.instantiate(cfg.datamodule)
 
     train_loader = datamodule.train_dataloader()
