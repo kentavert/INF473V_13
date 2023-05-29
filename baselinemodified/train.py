@@ -6,7 +6,7 @@ import data.datamodule
 from torch.utils.data import DataLoader
 import torchvision
 import cutout
-import torch.cuda.amp as amp
+from torch.cuda import amp
 
 @hydra.main(config_path="configs", config_name="config", version_base=None)
 def train(cfg):
@@ -14,7 +14,8 @@ def train(cfg):
     logger = wandb.init(project="challenge", name=f"{cfg.epochs}epochs af{cfg.af} T{cfg.confidence} unlabel{cfg.unlabelled_total} {cfg.optim._target_} {cfg.model._target_}")
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('mps') if torch.backends.mps.is_available() else torch.device('cpu')
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-
+    enableamp = True if torch.cuda.is_available() else False
+    scaler = amp.GradScaler(enabled=enableamp)
     model = hydra.utils.instantiate(cfg.model).to(device)
     optimizer = hydra.utils.instantiate(cfg.optim, params=model.parameters())
     
@@ -23,7 +24,6 @@ def train(cfg):
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda1)
 
     loss_fn = hydra.utils.instantiate(cfg.loss_fn)
-    model, optimizer = amp.initialize(model, optimizer, opt_level="O1")
     datamodule = hydra.utils.instantiate(cfg.datamodule)
 
     train_loader = datamodule.train_dataloader()
@@ -56,22 +56,23 @@ def train(cfg):
             images = datamodule.data_augment(images.to(device))
             
             labels = labels.to(device)
-            preds_strong = model(images_strong)
-            preds = model(images)
-            with torch.no_grad():
+            with amp.autocast(enableamp):
+                preds_strong = model(images_strong)
+                preds = model(images)
+            with torch.no_grad() and amp.autocast(enableamp):
                 pseudolabels = preds.max(1)[1]
                 probabilities = torch.nn.functional.softmax(preds, dim=-1).max(-1)[0]
                 nolabelsize = (labels == torch.tensor([-1]*len(labels),device=device)).sum()
                 considereddatasize = (probabilities>confidence).sum()
-            labelledloss = loss_fn(preds, labels).float().mean()
-            
-            unlabelledloss = (labels.eq(-1).float()* (probabilities>confidence).float() * loss_fn(preds_strong, pseudolabels).float()).mean()
-            loss = labelledloss + unlabelweight(epoch)*unlabelledloss 
+            with amp.autocast(enableamp):
+                labelledloss = loss_fn(preds, labels).float().mean()
+                unlabelledloss = (labels.eq(-1).float()* (probabilities>confidence).float() * loss_fn(preds_strong, pseudolabels).float()).mean()
+                loss = labelledloss + unlabelweight(epoch)*unlabelledloss 
             logger.log({"loss": loss.detach().cpu().numpy()})
             optimizer.zero_grad()
-            with amp.scale_loss(loss, optimizer) as scaled_loss:
-                scaled_loss.backward()
-            optimizer.step()
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
         scheduler.step()
 
 
