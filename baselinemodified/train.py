@@ -77,7 +77,7 @@ def train(cfg):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            scheduler.step()
+        scheduler.step()
 
 
         for i, batch in enumerate(train_loader):
@@ -92,7 +92,7 @@ def train(cfg):
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
-                scheduler.step()
+                
             
             epoch_loss += loss.detach().cpu().numpy() #* len(images)
             epoch_num_correct += (
