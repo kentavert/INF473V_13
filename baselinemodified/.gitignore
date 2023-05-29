@@ -7,3 +7,4 @@ create_test.py
 /dataset.zip
 submission.csv
 checkpoints
+.DS_Store
