@@ -1,3 +1,17 @@
+### TODO
+confusion matrix
+comparaison different methods
+bigger batch size
+
+### DONE
+bigger batch size -> stable convergence consistency: torch.cuda.amp to get bigger batch size.
+frozen is truly bad -> but consume too much memory
+limited unlabel size is partially good -> to be more stable 
+better model is always good -> apparent
+dataaugementation -> did not apply randaug or ctaug, but instead many random treatment and cutout
+
+
+
 ### VM
 I recommend you to use the pc in info salle. But they are probably limited by storage, you can put half of the unlabelled dataset in it.
 
