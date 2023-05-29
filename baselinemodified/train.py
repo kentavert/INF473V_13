@@ -6,7 +6,7 @@ import data.datamodule
 from torch.utils.data import DataLoader
 import torchvision
 import cutout
-
+from apex import amp
 
 @hydra.main(config_path="configs", config_name="config", version_base=None)
 def train(cfg):
@@ -16,10 +16,12 @@ def train(cfg):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     model = hydra.utils.instantiate(cfg.model).to(device)
-    if cfg.half==True:
-        model = model.half()
-
     optimizer = hydra.utils.instantiate(cfg.optim, params=model.parameters())
+
+    model, optimizer = amp.initialize(model, optimizer, opt_level="O1")
+    with amp.scale_loss(loss, optimizer) as scaled_loss:
+        scaled_loss.backward()
+    
     lambda1 = lambda epoch: torch.cos(torch.tensor(7*3.1416*epoch/16/cfg.epochs))
 
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda1)
@@ -53,14 +55,8 @@ def train(cfg):
         for i, batch in enumerate(combined_loader):
 
             images, labels = batch
-            if cfg.half==True:
-                images = images.half()
-                labels = labels.half()
-                images_strong = cut(datamodule.strong_transform(images.to(device))).half()
-                images = datamodule.data_augment(images.to(device)).half()
-            else:
-                images_strong = cut(datamodule.strong_transform(images.to(device)))
-                images = datamodule.data_augment(images.to(device))
+            images_strong = cut(datamodule.strong_transform(images.to(device)))
+            images = datamodule.data_augment(images.to(device))
             
             labels = labels.to(device)
             preds_strong = model(images_strong)
@@ -83,9 +79,6 @@ def train(cfg):
 
         for i, batch in enumerate(train_loader):
             images, labels = batch
-            if cfg.half==True:
-                images = images.half()
-                labels = labels.half()
             images = datamodule.data_augment(images.to(device))
             labels = labels.to(device)
             with torch.no_grad():
@@ -114,9 +107,6 @@ def train(cfg):
         for i, batch in enumerate(val_loader):
             with torch.no_grad():
                 images, labels = batch
-                if cfg.half==True:
-                    images = images.half()
-                    labels = labels.half()
                 images = images.to(device)
                 labels = labels.to(device)
                 preds = model(images)
