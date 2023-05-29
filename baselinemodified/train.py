@@ -19,7 +19,7 @@ def train(cfg):
     model = hydra.utils.instantiate(cfg.model).to(device)
 
     optimizer = hydra.utils.instantiate(cfg.optim, params=model.parameters())
-    lambda1 = lambda epoch: 7*3.1416*epoch/16/cfg.epochs
+    lambda1 = lambda epoch: cfg.optim.lr*torch.cos(7*3.1416*epoch/16/cfg.epochs)
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda1)
 
     loss_fn = hydra.utils.instantiate(cfg.loss_fn)
