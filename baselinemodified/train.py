@@ -112,65 +112,6 @@ def train(cfg):
         epoch_num_correct = 0
         num_samples = 0
 
-        #print(len(combinedataset.indexs))
-        '''
-        #reseting pseudo labels
-        for i,batch in enumerate(combined_loader):
-            images, labels = batch
-            if i < 720//len(images) + 1 :
-                continue
-
-            images = images.to(device)
-            labels = labels.to(device)
-            preds = torch.nn.functional.softmax(model(images),dim=-1)
-            for j in range(len(images)):
-                pred = preds[j]
-                if pred[pred.argmax()]>0.9 and pred.argmax()!=labels[j]:
-                    combinedataset.resetlabel(pred.argmax().type(torch.LongTensor), i*len(images)+j)
-        
-        #setting pseudo labels
-        threshold = 0.90
-        for i, batch in enumerate(unlabel_loader):
-            if epoch<3 :#determine
-                break
-            images, labels, idxs = batch
-            images = images.to(device)
-            labels = labels.to(device)
-            preds = torch.nn.functional.softmax(model(images),dim=-1)
-            for j in range(len(images)):
-                if labels[j]==48: #attention
-                    pred = preds[j]
-                    if pred[pred.argmax()]>threshold:#determine
-                        combinedataset.adddata(idxs[j], pred.argmax().to('cpu').type(torch.LongTensor))
-                        datamodule.unlabelled_dataset.set_label(pred.argmax().type(torch.LongTensor),idxs[j])
-        if threshold>0.6:
-            threshold-=0.01
-        '''
-        '''
-        #train on the pseudo labels
-        for i, batch in enumerate(unlabel_loader):
-            if epoch<10 :
-                break
-            images, labels, idxs = batch
-            #images = datamodule.data_augment(images)
-            extracted_images = []
-            extracted_labels = []
-
-            for j in range(len(images)):
-                if labels[j]!=48:
-                    extracted_images.append(images[j].tolist())
-                    extracted_labels.append(labels[j])
-            extracted_images = torch.tensor(extracted_images).to(device)
-            extracted_labels = torch.tensor(extracted_labels).type(torch.LongTensor).to(device)
-            if(len(extracted_labels)==0):
-                continue
-            preds = model(extracted_images)
-            loss = loss_fn(preds, extracted_labels)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            '''
-
         for i, batch in enumerate(val_loader):
             with torch.no_grad():
                 images, labels = batch
