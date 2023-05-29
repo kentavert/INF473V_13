@@ -82,7 +82,7 @@ def train(cfg):
         scheduler.step()
 
         combined_loss /= num_samples
-        logger.log({"combined_loss": loss.detach().cpu().numpy()})
+        logger.log({"combined_loss": combined_loss.detach().cpu().numpy()})
         logger.log({"considereddatasize": considered_nolabel_samples})
 
         num_samples = 0
