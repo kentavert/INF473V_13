@@ -5,7 +5,7 @@ defaults:
   - optim: SGD
   - loss_fn: cross_entropy
 
-epochs: 200
+epochs: 300
 
 datamodule:
   _target_: data.datamodule.DataModule
@@ -36,5 +36,3 @@ confidence: 0.95
 
 holes: 1
 cutoutlength: 40
-
-half: True

@@ -49,6 +49,8 @@ def train(cfg):
         epoch_loss = 0
         epoch_num_correct = 0
         num_samples = 0
+        considered_nolabel_samples = 0
+        combined_loss = 0
         for i, batch in enumerate(combined_loader):
 
             images, labels = batch
@@ -63,19 +65,27 @@ def train(cfg):
                 pseudolabels = preds.max(1)[1]
                 probabilities = torch.nn.functional.softmax(preds, dim=-1).max(-1)[0]
                 nolabelsize = (labels == torch.tensor([-1]*len(labels),device=device)).sum()
-                considereddatasize = (probabilities>confidence).sum()
+                #considereddatasize = (probabilities>confidence).sum()
+                considered_nolabel_samples += (probabilities>confidence).float().sum().numpy()
             with amp.autocast(enableamp):
-                labelledloss = loss_fn(preds, labels).float().mean()
-                unlabelledloss = (labels.eq(-1).float()* (probabilities>confidence).float() * loss_fn(preds_strong, pseudolabels).float()).mean()
+                labelledloss = loss_fn(preds, labels).mean()
+                unlabelledloss = (labels.eq(-1).float()* (probabilities>confidence).float() * loss_fn(preds_strong, pseudolabels)).mean()
                 loss = labelledloss + unlabelweight(epoch)*unlabelledloss 
-            logger.log({"loss": loss.detach().cpu().numpy()})
+
+                num_samples += len(labels)-considered_nolabel_samples
+                combined_loss += labelledloss.detach().float()*(len(labels)-nolabelsize) + unlabelledloss.detach().float()*considered_nolabel_samples
+            
             optimizer.zero_grad()
             scaler.scale(loss).backward()
             scaler.step(optimizer)
             scaler.update()
         scheduler.step()
 
+        combined_loss /= num_samples
+        logger.log({"combined_loss": loss.detach().cpu().numpy()})
+        logger.log({"considereddatasize": considered_nolabel_samples})
 
+        num_samples = 0
         for i, batch in enumerate(train_loader):
             images, labels = batch
             images = datamodule.data_augment(images.to(device))
@@ -84,7 +94,7 @@ def train(cfg):
                 preds = model(images)
                 loss = torch.nn.functional.cross_entropy(preds, labels, reduction='mean', label_smoothing=0.05)
             
-            epoch_loss += loss.detach().cpu().numpy()
+            epoch_loss += loss.detach().cpu().numpy() * len(images)
             epoch_num_correct += (
                 (preds.argmax(1) == labels).sum().detach().cpu().numpy()
             )
