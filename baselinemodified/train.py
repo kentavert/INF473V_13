@@ -24,8 +24,6 @@ def train(cfg):
 
     loss_fn = hydra.utils.instantiate(cfg.loss_fn)
     model, optimizer = amp.initialize(model, optimizer, opt_level="O1")
-    with amp.scale_loss(loss_fn, optimizer) as scaled_loss:
-        scaled_loss.backward()
     datamodule = hydra.utils.instantiate(cfg.datamodule)
 
     train_loader = datamodule.train_dataloader()
@@ -71,7 +69,8 @@ def train(cfg):
             loss = labelledloss + unlabelweight(epoch)*unlabelledloss 
             logger.log({"loss": loss.detach().cpu().numpy()})
             optimizer.zero_grad()
-            loss.backward()
+            with amp.scale_loss(loss, optimizer) as scaled_loss:
+                scaled_loss.backward()
             optimizer.step()
         scheduler.step()
 
