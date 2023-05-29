@@ -19,9 +19,9 @@ def train(cfg):
     model = hydra.utils.instantiate(cfg.model).to(device)
 
     optimizer = hydra.utils.instantiate(cfg.optim, params=model.parameters())
-    lambda1 = lambda epoch: cfg.optim.lr*torch.cos(torch.tensor(7*3.1416*epoch/16/cfg.epochs))
+    #lambda1 = lambda epoch: cfg.optim.lr*torch.cos(torch.tensor(7*3.1416*epoch/16/cfg.epochs))
 
-    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda1)
+    #scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda1)
 
     loss_fn = hydra.utils.instantiate(cfg.loss_fn)
     datamodule = hydra.utils.instantiate(cfg.datamodule)
@@ -77,7 +77,7 @@ def train(cfg):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-        scheduler.step()
+        #scheduler.step()
 
 
         for i, batch in enumerate(train_loader):
