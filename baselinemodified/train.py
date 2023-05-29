@@ -11,7 +11,7 @@ from torch.cuda import amp
 @hydra.main(config_path="configs", config_name="config", version_base=None)
 def train(cfg):
 
-    logger = wandb.init(project="challenge", name=f"{cfg.epochs}epochs af{cfg.af} T{cfg.confidence} unlabel{cfg.unlabelled_total} {cfg.optim._target_} {cfg.model._target_}")
+    logger = wandb.init(project="challenge", name=f"bs{cfg.dataset.batch_size} af{cfg.af} T{cfg.confidence} unlabel{cfg.unlabelled_total} {cfg.optim._target_}{cfg.model._target_}")
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('mps') if torch.backends.mps.is_available() else torch.device('cpu')
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     enableamp = True if torch.cuda.is_available() else False
