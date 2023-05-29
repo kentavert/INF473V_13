@@ -3,7 +3,6 @@ import torch
 import torchvision
 import torch.nn as nn
 
-
 class ResNetFinetune(nn.Module):
     def __init__(self, num_classes, frozen=False):
         super().__init__()

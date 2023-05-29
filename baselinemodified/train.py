@@ -6,7 +6,7 @@ import data.datamodule
 from torch.utils.data import DataLoader
 import torchvision
 import cutout
-from apex import amp
+import torch.cuda.amp as amp
 
 @hydra.main(config_path="configs", config_name="config", version_base=None)
 def train(cfg):
