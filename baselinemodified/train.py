@@ -16,6 +16,8 @@ def train(cfg):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     model = hydra.utils.instantiate(cfg.model).to(device)
+    if cfg.half==True:
+        model = model.half()
 
     optimizer = hydra.utils.instantiate(cfg.optim, params=model.parameters())
     lambda1 = lambda epoch: torch.cos(torch.tensor(7*3.1416*epoch/16/cfg.epochs))
@@ -49,11 +51,11 @@ def train(cfg):
         epoch_num_correct = 0
         num_samples = 0
         for i, batch in enumerate(combined_loader):
-            
-            if epoch<cfg.T1 :
-                break
-            
+
             images, labels = batch
+            if cfg.half==True:
+                images = images.half()
+                labels = labels.half()
             images_strong = cut(datamodule.strong_transform(images.to(device)))
             images = datamodule.data_augment(images.to(device))
             
@@ -65,7 +67,7 @@ def train(cfg):
                 probabilities = torch.nn.functional.softmax(preds, dim=-1).max(-1)[0]
                 nolabelsize = (labels == torch.tensor([-1]*len(labels),device=device)).sum()
                 considereddatasize = (probabilities>confidence).sum()
-            labelledloss = loss_fn(preds_strong, labels).mean()
+            labelledloss = loss_fn(preds, labels).mean()
             
             unlabelledloss = (labels.eq(-1).float()* (probabilities>confidence).float() * loss_fn(preds_strong, pseudolabels)).mean()
             loss = labelledloss + unlabelweight(epoch)*unlabelledloss 
@@ -78,17 +80,14 @@ def train(cfg):
 
         for i, batch in enumerate(train_loader):
             images, labels = batch
+            if cfg.half==True:
+                images = images.half()
+                labels = labels.half()
             images = datamodule.data_augment(images.to(device))
             labels = labels.to(device)
-            preds = model(images)
-            
-            loss = torch.nn.functional.cross_entropy(preds, labels, reduction='mean', label_smoothing=0.05)
-            
-            if epoch<cfg.T1 :
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-                
+            with torch.no_grad():
+                preds = model(images)
+                loss = torch.nn.functional.cross_entropy(preds, labels, reduction='mean', label_smoothing=0.05)
             
             epoch_loss += loss.detach().cpu().numpy()
             epoch_num_correct += (
@@ -112,6 +111,9 @@ def train(cfg):
         for i, batch in enumerate(val_loader):
             with torch.no_grad():
                 images, labels = batch
+                if cfg.half==True:
+                    images = images.half()
+                    labels = labels.half()
                 images = images.to(device)
                 labels = labels.to(device)
                 preds = model(images)

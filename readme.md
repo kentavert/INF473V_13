@@ -2,7 +2,7 @@
 I recommend you to use the pc in info salle. But they are probably limited by storage, you can put half of the unlabelled dataset in it.
 
 ### FixMatch (most recent work)
-I have newly implement https://github.com/google-research/fixmatch/tree/master or you can see https://arxiv.org/abs/2001.07685. 
+I have newly implement https://github.com/google-research/fixmatch/tree/master or you can see https://paperswithcode.com/paper/fixmatch-simplifying-semi-supervised-learning. 
 Also very useful: https://amitness.com/2020/03/fixmatch-semi-supervised/ https://amitness.com/2020/07/semi-supervised-learning/.
 
 CutOut augmentation: https://github.com/uoguelph-mlrg/Cutout/blob/master/util/cutout.py 
