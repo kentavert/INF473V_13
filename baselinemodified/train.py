@@ -72,7 +72,7 @@ def train(cfg):
                 unlabelledloss = (labels.eq(-1).float()* (probabilities>confidence).float() * loss_fn(preds_strong, pseudolabels)).mean()
                 loss = labelledloss + unlabelweight(epoch)*unlabelledloss 
 
-                num_samples += len(labels)-considered_nolabel_samples
+                num_samples += len(labels) - nolabelsize + considered_nolabel_samples
                 combined_loss += labelledloss.detach().float()*(len(labels)-nolabelsize) + unlabelledloss.detach().float()*considered_nolabel_samples
             
             optimizer.zero_grad()
