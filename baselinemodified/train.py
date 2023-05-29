@@ -17,7 +17,11 @@ def train(cfg):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     model = hydra.utils.instantiate(cfg.model).to(device)
+
     optimizer = hydra.utils.instantiate(cfg.optim, params=model.parameters())
+    lambda1 = lambda epoch: 7*3.1416*epoch/16/cfg.epochs
+    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda1)
+
     loss_fn = hydra.utils.instantiate(cfg.loss_fn)
     datamodule = hydra.utils.instantiate(cfg.datamodule)
 
@@ -72,6 +76,7 @@ def train(cfg):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            scheduler.step()
 
 
         for i, batch in enumerate(train_loader):
@@ -86,6 +91,7 @@ def train(cfg):
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
+                scheduler.step()
             
             epoch_loss += loss.detach().cpu().numpy() #* len(images)
             epoch_num_correct += (
