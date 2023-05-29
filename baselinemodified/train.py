@@ -4,7 +4,6 @@ import hydra
 from tqdm import tqdm
 import data.datamodule
 from torch.utils.data import DataLoader
-#from RandAugment import RandAugment
 import torchvision
 import cutout
 
@@ -19,9 +18,9 @@ def train(cfg):
     model = hydra.utils.instantiate(cfg.model).to(device)
 
     optimizer = hydra.utils.instantiate(cfg.optim, params=model.parameters())
-    #lambda1 = lambda epoch: cfg.optim.lr*torch.cos(torch.tensor(7*3.1416*epoch/16/cfg.epochs))
+    lambda1 = lambda epoch: torch.cos(torch.tensor(7*3.1416*epoch/16/cfg.epochs))
 
-    #scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda1)
+    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda1)
 
     loss_fn = hydra.utils.instantiate(cfg.loss_fn)
     datamodule = hydra.utils.instantiate(cfg.datamodule)
@@ -55,8 +54,6 @@ def train(cfg):
                 break
             
             images, labels = batch
-            #print(images.shape,labels.shape)
-            #images = datamodule.data_augment(images)
             images_strong = cut(datamodule.strong_transform(images.to(device)))
             images = datamodule.data_augment(images.to(device))
             
@@ -72,12 +69,11 @@ def train(cfg):
             
             unlabelledloss = (labels.eq(-1).float()* (probabilities>confidence).float() * loss_fn(preds_strong, pseudolabels)).mean()
             loss = labelledloss + unlabelweight(epoch)*unlabelledloss 
-            #print(nolabelsize, labelledloss, loss)
             logger.log({"loss": loss.detach().cpu().numpy()})
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-        #scheduler.step()
+        scheduler.step()
 
 
         for i, batch in enumerate(train_loader):
@@ -94,7 +90,7 @@ def train(cfg):
                 optimizer.step()
                 
             
-            epoch_loss += loss.detach().cpu().numpy() #* len(images)
+            epoch_loss += loss.detach().cpu().numpy()
             epoch_num_correct += (
                 (preds.argmax(1) == labels).sum().detach().cpu().numpy()
             )
