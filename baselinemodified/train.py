@@ -35,6 +35,9 @@ def train(cfg):
     n_holes = cfg.holes
     cutoutlength = cfg.cutoutlength
     cut = cutout.Cutout(n_holes, cutoutlength, device)
+    T = torch.tensor([cfg.confidence]*cfg.dataset.num_classes)
+    beta = torch.tensor([0.0]*cfg.dataset.num_classes)
+    sigma = torch.tensor([0.0]*cfg.dataset.num_classes)
 
     #threshold function
     def unlabelweight(epoch):
@@ -66,12 +69,19 @@ def train(cfg):
             with torch.no_grad() and amp.autocast(enableamp):
                 pseudolabels = preds.max(1)[1]
                 probabilities = torch.nn.functional.softmax(preds, dim=-1).max(-1)[0]
+
+                for i in range(cfg.dataset.num_classes):
+                    sigma[i] += ((pseudolabels==i)*(probabilities>T[i])).float().sum()
+
                 nolabelsize = (labels == torch.tensor([-1]*len(labels),device=device)).sum()
                 #considereddatasize = (probabilities>confidence).sum()
                 considered_nolabel_samples += (probabilities>confidence).float().sum().cpu().numpy()
             with amp.autocast(enableamp):
                 labelledloss = loss_fn(preds, labels).mean()
-                unlabelledloss = (labels.eq(-1).float()* (probabilities>confidence).float() * loss_fn(preds_strong, pseudolabels)).mean()
+                unlabelledloss = 0
+                for i in range(cfg.dataset.num_classes):
+                    unlabelledloss += (labels.eq(-1).float()* (probabilities>T[i]).float()* (pseudolabels==i).float() * loss_fn(preds_strong, pseudolabels)).mean()
+                
                 loss = labelledloss + unlabelweight(epoch)*unlabelledloss 
                 scaler.scale(loss/cfg.loss_counter).backward()
                 num_samples += len(labels) - nolabelsize + considered_nolabel_samples
@@ -83,6 +93,9 @@ def train(cfg):
                 optimizer.zero_grad()
                 loss_counter=0
 
+        beta = sigma/sigma.max(-1)[0]
+        T = beta*cfg.confidence
+        
         scheduler.step()
 
         combined_loss /= num_samples
