@@ -39,6 +39,7 @@ def train(cfg):
     T = torch.tensor([cfg.confidence]*cfg.dataset.num_classes).to(device)
     beta = torch.tensor([0.0]*cfg.dataset.num_classes).to(device)
     sigma = torch.tensor([0.0]*cfg.dataset.num_classes).to(device)
+    M = lambda x: x/(2-x)
 
     #threshold function
     def unlabelweight(epoch):
@@ -76,7 +77,7 @@ def train(cfg):
 
                 nolabelsize = (labels == torch.tensor([-1]*len(labels),device=device)).sum()
                 #considereddatasize = (probabilities>confidence).sum()
-                considered_nolabel_samples += (probabilities>confidence).float().sum().cpu().numpy()
+                considered_nolabel_samples += sigma.sum().cpu().numpy()
             with amp.autocast(enableamp):
                 labelledloss = loss_fn(preds, labels).mean()
                 unlabelledloss = 0
@@ -95,8 +96,8 @@ def train(cfg):
                 optimizer.zero_grad()
                 loss_counter=0
 
-        beta = sigma/sigma.max(-1)[0]
-        T = beta*cfg.confidence
+        beta = sigma/max(sigma.max(-1)[0], cfg.unlabelled_total-considered_nolabel_samples)#warmup
+        T = M(beta)*cfg.confidence
 
         scheduler.step()
 
