@@ -51,8 +51,8 @@ def train(cfg):
         num_samples = 0
         considered_nolabel_samples = 0
         combined_loss = 0
-        loss = 0
         loss_counter = 0
+        optimizer.zero_grad()
         for i, batch in enumerate(combined_loader):
 
             images, labels = batch
@@ -72,18 +72,17 @@ def train(cfg):
             with amp.autocast(enableamp):
                 labelledloss = loss_fn(preds, labels).mean()
                 unlabelledloss = (labels.eq(-1).float()* (probabilities>confidence).float() * loss_fn(preds_strong, pseudolabels)).mean()
-                loss += labelledloss + unlabelweight(epoch)*unlabelledloss 
-
+                loss = labelledloss + unlabelweight(epoch)*unlabelledloss 
+                scaler.scale(loss/cfg.loss_counter).backward()
                 num_samples += len(labels) - nolabelsize + considered_nolabel_samples
                 combined_loss += labelledloss.detach().float()*(len(labels)-nolabelsize) + unlabelledloss.detach().float()*considered_nolabel_samples
                 loss_counter+=1
             if loss_counter>=cfg.loss_counter:
-                optimizer.zero_grad()
-                scaler.scale(loss/cfg.loss_counter).backward()
                 scaler.step(optimizer)
                 scaler.update()
+                optimizer.zero_grad()
                 loss_counter=0
-                loss=0
+
         scheduler.step()
 
         combined_loss /= num_samples

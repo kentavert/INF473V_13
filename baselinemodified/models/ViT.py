@@ -5,7 +5,7 @@ import torch.nn as nn
 class vitfinetune(nn.Module):
     def __init__(self, num_classes, frozen=False):
         super().__init__()
-        self.backbone = torchvision.models.maxvit_t(pretrained=True)
+        self.backbone = torchvision.models.maxvit_t(weights='DEFAULT')
         self.backbone.classifier = nn.Sequential(nn.AdaptiveAvgPool2d(1),
                                                 nn.Flatten(),
                                                 nn.LayerNorm(512),
