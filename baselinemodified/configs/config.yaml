@@ -36,3 +36,4 @@ confidence: 0.95
 
 holes: 1
 cutoutlength: 40
+loss_counter: 5
