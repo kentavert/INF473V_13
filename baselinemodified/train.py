@@ -35,9 +35,10 @@ def train(cfg):
     n_holes = cfg.holes
     cutoutlength = cfg.cutoutlength
     cut = cutout.Cutout(n_holes, cutoutlength, device)
-    T = torch.tensor([cfg.confidence]*cfg.dataset.num_classes)
-    beta = torch.tensor([0.0]*cfg.dataset.num_classes)
-    sigma = torch.tensor([0.0]*cfg.dataset.num_classes)
+
+    T = torch.tensor([cfg.confidence]*cfg.dataset.num_classes).to(device)
+    beta = torch.tensor([0.0]*cfg.dataset.num_classes).to(device)
+    sigma = torch.tensor([0.0]*cfg.dataset.num_classes).to(device)
 
     #threshold function
     def unlabelweight(epoch):
@@ -95,7 +96,7 @@ def train(cfg):
 
         beta = sigma/sigma.max(-1)[0]
         T = beta*cfg.confidence
-        
+
         scheduler.step()
 
         combined_loss /= num_samples
