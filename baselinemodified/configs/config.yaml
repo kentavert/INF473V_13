@@ -32,7 +32,7 @@ T1 : 1
 T2 : 1
 af : 1
 unlabelled_total : 4000
-confidence: 0.97
+confidence: 0.95
 
 holes: 1
 cutoutlength: 40

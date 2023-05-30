@@ -80,8 +80,9 @@ def train(cfg):
             with amp.autocast(enableamp):
                 labelledloss = loss_fn(preds, labels).mean()
                 unlabelledloss = 0
+                unlabelledloss_total = loss_fn(preds_strong, pseudolabels)
                 for i in range(cfg.dataset.num_classes):
-                    unlabelledloss += (labels.eq(-1).float()* (probabilities>T[i]).float()* (pseudolabels==i).float() * loss_fn(preds_strong, pseudolabels)).mean()
+                    unlabelledloss += (labels.eq(-1).float()* (probabilities>T[i]).float()* (pseudolabels==i).float() * unlabelledloss_total).mean()
                 
                 loss = labelledloss + unlabelweight(epoch)*unlabelledloss 
                 scaler.scale(loss/cfg.loss_counter).backward()
