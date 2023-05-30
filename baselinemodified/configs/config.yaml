@@ -1,6 +1,6 @@
 defaults:
   - _self_
-  - model: vit
+  - model: resnext
   - dataset: 48_classes_supervised
   - optim: SGD
   - loss_fn: cross_entropy
@@ -36,4 +36,4 @@ confidence: 0.95
 
 holes: 1
 cutoutlength: 40
-loss_counter: 1
+loss_counter: 3
