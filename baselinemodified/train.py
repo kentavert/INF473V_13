@@ -80,7 +80,7 @@ def train(cfg):
                 nolabelsize = (labels == torch.tensor([-1]*len(labels),device=device)).sum()
                 #considereddatasize = (probabilities>confidence).sum()
             with amp.autocast(enableamp):
-                labelledloss = loss_fn(preds, labels).mean()
+                labelledloss = loss_fn(preds_strong, labels).mean()
                 unlabelledloss = 0
                 unlabelledloss_total = loss_fn(preds_strong, pseudolabels)
                 for i in range(cfg.dataset.num_classes):
@@ -98,7 +98,7 @@ def train(cfg):
                 loss_counter=0
         considered_nolabel_samples = sigma.sum().cpu().numpy()
         #beta = sigma/max(sigma.max(-1)[0], cfg.unlabelled_total-considered_nolabel_samples)#warmup
-        beta = sigma/sigma.max(-1)[0]
+        beta = sigma/max(sigma.max(-1)[0],20)
         T = M(beta)*cfg.confidence
 
         scheduler.step()
