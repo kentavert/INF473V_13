@@ -59,7 +59,7 @@ def train(cfg):
         loss_counter = 0
         optimizer.zero_grad()
         sigma = torch.tensor([0.0]*cfg.dataset.num_classes).to(device)
-        
+
         for i, batch in enumerate(combined_loader):
 
             images, labels = batch
@@ -79,7 +79,6 @@ def train(cfg):
 
                 nolabelsize = (labels == torch.tensor([-1]*len(labels),device=device)).sum()
                 #considereddatasize = (probabilities>confidence).sum()
-                considered_nolabel_samples += sigma.sum().cpu().numpy()
             with amp.autocast(enableamp):
                 labelledloss = loss_fn(preds, labels).mean()
                 unlabelledloss = 0
@@ -89,7 +88,7 @@ def train(cfg):
                 
                 loss = labelledloss + unlabelweight(epoch)*unlabelledloss 
                 scaler.scale(loss/cfg.loss_counter).backward()
-                num_samples += len(labels) - nolabelsize + considered_nolabel_samples
+
                 combined_loss += labelledloss.detach().float()*(len(labels)-nolabelsize) + unlabelledloss.detach().float()*considered_nolabel_samples
                 loss_counter+=1
             if loss_counter>=cfg.loss_counter:
@@ -97,13 +96,13 @@ def train(cfg):
                 scaler.update()
                 optimizer.zero_grad()
                 loss_counter=0
-
+        considered_nolabel_samples = sigma.sum().cpu().numpy()
         beta = sigma/max(sigma.max(-1)[0], cfg.unlabelled_total-considered_nolabel_samples)#warmup
         T = M(beta)*cfg.confidence
 
         scheduler.step()
 
-        combined_loss /= num_samples
+        combined_loss /= considered_nolabel_samples + len(datamodule.train_dataset)
         logger.log({"combined_loss": combined_loss.detach().cpu().numpy()})
         logger.log({"considereddatasize": considered_nolabel_samples})
 
