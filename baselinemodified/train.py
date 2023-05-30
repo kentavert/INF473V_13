@@ -97,7 +97,8 @@ def train(cfg):
                 optimizer.zero_grad()
                 loss_counter=0
         considered_nolabel_samples = sigma.sum().cpu().numpy()
-        beta = sigma/max(sigma.max(-1)[0], cfg.unlabelled_total-considered_nolabel_samples)#warmup
+        #beta = sigma/max(sigma.max(-1)[0], cfg.unlabelled_total-considered_nolabel_samples)#warmup
+        beta = sigma/sigma.max(-1)[0]
         T = M(beta)*cfg.confidence
 
         scheduler.step()
