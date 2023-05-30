@@ -9,7 +9,7 @@ frozen is truly bad -> but consume too much memory
 limited unlabel size is partially good -> to be more stable 
 better model is always good -> apparent
 dataaugementation -> did not apply randaug or ctaug, but instead many random treatment and cutout
-
+quality of pseudolabel is very important
 
 
 ### VM
