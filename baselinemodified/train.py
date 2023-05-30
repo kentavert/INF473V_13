@@ -39,7 +39,7 @@ def train(cfg):
     T = torch.tensor([cfg.confidence]*cfg.dataset.num_classes).to(device)
     beta = torch.tensor([0.0]*cfg.dataset.num_classes).to(device)
     sigma = torch.tensor([0.0]*cfg.dataset.num_classes).to(device)
-    M = lambda x: x/(2-x)
+    M = lambda x: x**2/2 + 1/2
 
     #threshold function
     def unlabelweight(epoch):
@@ -75,7 +75,7 @@ def train(cfg):
                 probabilities = torch.nn.functional.softmax(preds, dim=-1).max(-1)[0]
 
                 for i in range(cfg.dataset.num_classes):
-                    sigma[i] += ((pseudolabels==i)*(probabilities>T[i])).float().sum()
+                    sigma[i] += ((labels==-1)*(pseudolabels==i)*(probabilities>T[i])).float().sum()
 
                 nolabelsize = (labels == torch.tensor([-1]*len(labels),device=device)).sum()
                 #considereddatasize = (probabilities>confidence).sum()
