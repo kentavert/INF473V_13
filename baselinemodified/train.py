@@ -58,6 +58,8 @@ def train(cfg):
         combined_loss = 0
         loss_counter = 0
         optimizer.zero_grad()
+        sigma = torch.tensor([0.0]*cfg.dataset.num_classes).to(device)
+        
         for i, batch in enumerate(combined_loader):
 
             images, labels = batch
