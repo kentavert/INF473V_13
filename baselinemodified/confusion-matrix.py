@@ -4,9 +4,11 @@ import pandas as pd
 import torch
 import hydra
 import matplotlib.pyplot as plt
+from torchvision.datasets import ImageFolder
+
 
 @hydra.main(config_path="configs", config_name="config", version_base=None)
-def confusion_matrix(cfg):
+def plot_confusion_matrix(cfg):
 
     y_pred = []
     y_label = []
@@ -14,7 +16,9 @@ def confusion_matrix(cfg):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('mps') if torch.backends.mps.is_available() else torch.device('cpu')
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-    data = Datamodule.val_dataloader()
+    datamodule = hydra.utils.instantiate(cfg.datamodule)
+    #data = datamodule.val_dataloader()
+    data = datamodule.train_dataloader()
     model = hydra.utils.instantiate(cfg.model).to(device)
 
     images = []
@@ -28,11 +32,16 @@ def confusion_matrix(cfg):
 
     images = torch.cat(images, dim=0)
     labels = torch.cat(labels, dim=0)
+    labels = labels.numpy()
 
     predictions = model(images)
+    predictions = predictions.argmax(1).numpy()
+
+    #print(predictions[:15])
+    #print(labels[:15])
 
     cm = confusion_matrix(labels, predictions)
-    cm_df = pd.DataFrame(cm, index=labels, columns=labels)
+    cm_df = pd.DataFrame(cm, index=[k for k in range (48)], columns=[k for k in range (48)])
 
 
     plt.figure(figsize=(10, 7))
@@ -45,4 +54,4 @@ def confusion_matrix(cfg):
 
 
 if __name__ == "__main__":
-    confusion_matrix()
+    plot_confusion_matrix()
